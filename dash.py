@@ -49,6 +49,7 @@ df_selecionado = df[
     (df["numero_vendas"].isin(numero_vendas))
 ]
 
+
 # Exibir valores médios e estatísticas
 def Home():
     with st.expander("Tabela"):
@@ -80,14 +81,17 @@ def Home():
 
     st.markdown("""--------""")
 
+
 # Função para os gráficos
 def graficos(df_selecionado):
     if df_selecionado.empty:
         st.warning("Nenhum dado disponível para gerar gráficos.")
         return
 
-    graf1, graf2, graf3, graf4, graf5, graf6, = st.tabs(["Gráfico de Barras", "Gráfico de Linhas", "Gráfico de Pizza", "Gráfico de Dispersão", "Gráfico Horizontal"])
-
+    graf1, graf2, graf3, graf4, graf5, graf6 = st.tabs(
+        ["Gráfico de Barras", "Gráfico de Linhas", "Gráfico de Pizza",
+         "Gráfico de Dispersão", "Gráfico Horizontal", "Gráfico de Área"]
+    )
 
     with graf1:
         st.write("Gráfico de Barras")
@@ -95,8 +99,7 @@ def graficos(df_selecionado):
         fig_valores = px.bar(investimento,
                              x=investimento.index,
                              y="valor",
-                             orientation="h",
-                             title="<b>Valores de Carros</b>",
+                             title="<b>Quantidade de Carros por Marca</b>",
                              color_discrete_sequence=["#0083b3"])
         st.plotly_chart(fig_valores, use_container_width=True)
 
@@ -112,7 +115,6 @@ def graficos(df_selecionado):
     with graf3:
         st.write("Gráfico de Pizza")
         dados2 = df_selecionado.groupby("marca").sum()[["valor"]]
-
         fig_valores3 = px.pie(dados2,
                               values="valor",
                               names=dados2.index,
@@ -120,7 +122,6 @@ def graficos(df_selecionado):
         st.plotly_chart(fig_valores3, use_container_width=True)
 
     with graf4:
-
         st.write("Gráfico de Dispersão")
         fig_valores4 = px.scatter(df_selecionado,
                                   x="marca",
@@ -140,54 +141,47 @@ def graficos(df_selecionado):
                              title="<b>Valores por Marca - Barras Horizontais</b>")
         st.plotly_chart(fig_horizontais, use_container_width=True)
 
-   # with graf6:
-        st.write("Grafico Linha")
-
-        dados6 = df_selecionado[["valor", "marca"]]
-
+    with graf6:
+        st.write("Gráfico de Área")
+        dados6 = df_selecionado.groupby("marca")[["valor"]].sum()
         fig_valores6 = px.area(dados6,
-                               x = dados6.index,
-                               y = "valor",
-                               title="Grafica de Linha"
-                               )
-        st.area_chart(fig_valores6)
+                               x=dados6.index,
+                               y="valor",
+                               title="<b>Área - Valor por Marca</b>")
+        st.plotly_chart(fig_valores6, use_container_width=True)
 
 
 def barraprogresso():
     valorAtual = df_selecionado["numero_vendas"].sum()
-    object = 200000
-    percentual = round((valorAtual / object * 100))
+    meta = 200000
+    percentual = round((valorAtual / meta * 100))
 
-
-    if percentual > 100:
-        st.subheader("Valores Antingidos!!!")
-
+    if percentual >= 100:
+        st.subheader("Valores Atingidos!!!")
     else:
-        st.write(f"Voce tem {percentual}% de {object}. Corra atras filhao!")
-
+        st.write(f"Você tem {percentual}% de {meta}. Corra atrás!")
         mybar = st.progress(0)
         for percentualCompleto in range(percentual):
-            mybar.progress(percentualCompleto + 1, tex="Alvo %")
+            mybar.progress(percentualCompleto + 1, text="Alvo %")
 
-#***************MENU LATERAL****************
+
+# *************** MENU LATERAL ****************
 
 def menuLateral():
     with st.sidebar:
         selecionado = option_menu(menu_title="Menu", options=["Home", "progresso"],
-        icons=["house", "eye"], menu_icon="cast",
-        default_index=0)
+                                  icons=["house", "eye"], menu_icon="cast",
+                                  default_index=0)
 
     if selecionado == "Home":
-        st.subheader(f"Pagina:{selecionado}")
+        st.subheader(f"Página: {selecionado}")
         Home()
         graficos(df_selecionado)
 
     if selecionado == "progresso":
-        st.subheader(f"Pagina:{selecionado}")
+        st.subheader(f"Página: {selecionado}")
         barraprogresso()
         graficos(df_selecionado)
-
-
 
 
 menuLateral()
